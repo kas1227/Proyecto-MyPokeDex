@@ -1,0 +1,28 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: mypokedex-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mypokedexv1
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_HOST: "%"
+      TZ: Europe/Madrid
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      # Solo accesible desde esta máquina: root no tiene contraseña.
+      - "127.0.0.1:3306:3306"
+    volumes:
+      # Volumen nombrado en ext4. Nunca un bind-mount a la partición NTFS:
+      # InnoDB no debe escribir su datadir sobre NTFS.
+      - mypokedex-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  mypokedex-db-data:
